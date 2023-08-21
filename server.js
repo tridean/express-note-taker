@@ -1,7 +1,6 @@
 const express = require('express');
 const fs = require('fs');
-const uuid = require('uuid'); // If you decide to use uuid for generating unique IDs
-
+const uuid = require('uuid'); // Import the 'uuid' package
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -9,38 +8,54 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('public')); // Assuming static files are in a "public" directory
 
-// Routes
+// Array to store notes (replace this with a database in a production app)
+let notes = [];
+
+// HTML Routes
 app.get('/', (req, res) => {
     fs.readFile(__dirname + '/public/index.html', 'utf8', (err, data) => {
-        if (err) {
-            console.error(err);
-            res.status(500).send('Internal Server Error');
-        } else {
-            res.send(data);
-        }
-        });
+    if (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    } else {
+        res.send(data);
+    }
+    });
 });
 
 app.get('/notes', (req, res) => {
-    s.readFile(__dirname + '/public/notes.html', 'utf8', (err, data) => {
-        if (err) {
-            console.error(err);
-            res.status(500).send('Internal Server Error');
-        } else {
-            res.send(data);
-        }
-        });
+    fs.readFile(__dirname + '/public/notes.html', 'utf8', (err, data) => {
+    if (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    } else {
+        res.send(data);
+    } 
+    });
 });
 
+// API Routes
 app.get('/api/notes', (req, res) => {
-  // Read and return notes from your db.json file
+  res.json(notes); // Return the array of notes as JSON
 });
 
 app.post('/api/notes', (req, res) => {
-  // Receive a new note in the request body, add it to db.json with a unique ID, and return the new note
+  // Create a new note object with a unique ID using 'uuid'
+    const newNote = {
+    id: uuid.v4(), // Generate a unique ID using 'uuid'
+    title: req.body.title,
+    text: req.body.text,
+    };
+
+  // Add the new note to the array of notes
+    notes.push(newNote);
+
+  // Send the new note as a response
+    res.json(newNote);
 });
 
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
 });
+
