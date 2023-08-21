@@ -30,7 +30,7 @@ app.get('/notes', (req, res) => {
         res.status(500).send('Internal Server Error');
     } else {
         res.send(data);
-    } 
+    }
     });
 });
 
@@ -54,8 +54,43 @@ app.post('/api/notes', (req, res) => {
     res.json(newNote);
 });
 
+// Route to view a specific note by ID
+app.get('/api/notes/:id', (req, res) => {
+    const noteId = req.params.id;
+
+  // Find the note with the matching ID
+    const selectedNote = notes.find((note) => note.id === noteId);
+
+    if (!selectedNote) {
+    // Handle the case where the note with the given ID does not exist
+    return res.status(404).json({ error: 'Note not found' });
+    }
+
+  // Send the selected note as JSON response
+    res.json(selectedNote);
+});
+
+// Route to edit a specific note by ID
+app.put('/api/notes/:id', (req, res) => {
+    const noteId = req.params.id;
+    const updatedNote = req.body;
+
+  // Find the index of the note with the matching ID
+    const index = notes.findIndex((note) => note.id === noteId);
+
+    if (index === -1) {
+    // Handle the case where the note with the given ID does not exist
+    return res.status(404).json({ error: 'Note not found' });
+    } 
+
+  // Update the note in your data storage 
+    notes[index] = updatedNote;
+
+  // Send the updated note as JSON response
+    res.json(updatedNote);
+});
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
 });
-

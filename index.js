@@ -48,16 +48,47 @@ function loadNotes() {
     if (event.target.matches('.list-group-item')) {
         const noteId = event.target.dataset.id;
 
-      // You can implement logic to retrieve and display the clicked note
-      // based on its ID, either in a modal or on the right-hand side of the page.
-      // You'll need to make another API request to get the note details.
-      // Example: fetch(`/api/notes/${noteId}`)
+      // Fetch the details of the clicked note
+        fetch(`/api/notes/${noteId}`)
+        .then((response) => response.json())
+        .then((note) => {
+          // Populate the UI elements with the note details for editing
+            document.querySelector('.note-title').value = note.title;
+            document.querySelector('.note-textarea').value = note.text;
+        })
+        .catch((error) => {
+            console.error('Error loading note details:', error);
+        });
     }
     }
 
+    function saveEditedNote() {
+        const noteId = /* Get the ID of the note being edited */;
+        const noteTitle = document.querySelector('.note-title').value;
+        const noteText = document.querySelector('.note-textarea').value;
+    
+        // Send a PUT request to update the note on the server
+        fetch(`/api/notes/${noteId}`, {
+            method: 'PUT',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ title: noteTitle, text: noteText }),
+        })
+            .then((response) => response.json())
+            .then(() => {
+            // Reload the notes after saving an edited note
+            loadNotes();
+            })
+            .catch((error) => {
+            console.error('Error saving edited note:', error);
+            });
+        } 
+        
   // Event listeners
     document.querySelector('.save-note').addEventListener('click', saveNote);
     document.querySelector('.list-container').addEventListener('click', handleNoteClick);
 
   // Initial load of notes when the page loads
     loadNotes();
+
