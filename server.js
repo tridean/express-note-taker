@@ -1,14 +1,35 @@
 const express = require('express');
 const fs = require('fs');
-const uuid = require('uuid'); // Import the 'uuid' package
+const uuid = require('uuid');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
-app.use(express.static('public')); // Assuming static files are in a "public" directory
+app.use(express.static('public'));
 
-// Array to store notes (replace this with a database in a production app)
+// Read data from JSON file
+function readDataFromFile() {
+    try {
+    const data = fs.readFileSync('db.json', 'utf8');
+    return JSON.parse(data);
+    } catch (error) {
+    console.error('Error reading data from file:', error);
+    return [];
+    }
+}
+
+// Write data to JSON file
+function writeDataToFile(data) {
+    try {
+    fs.writeFileSync('db.json', JSON.stringify(data, null, 2), 'utf8');
+    } catch (error) {
+    console.error('Error writing data to file:', error);
+    }
+}
+
+// Initial data (empty array)
 let notes = [];
 
 // HTML Routes
@@ -36,58 +57,27 @@ app.get('/notes', (req, res) => {
 
 // API Routes
 app.get('/api/notes', (req, res) => {
-  res.json(notes); // Return the array of notes as JSON
+    res.json(notes);
 });
 
 app.post('/api/notes', (req, res) => {
-  // Create a new note object with a unique ID using 'uuid'
     const newNote = {
-    id: uuid.v4(), // Generate a unique ID using 'uuid'
+    id: uuid.v4(),
     title: req.body.title,
     text: req.body.text,
     };
 
-  // Add the new note to the array of notes
+  // Read existing data from the file
+    notes = readDataFromFile();
+
+  // Add the new note to the data array
     notes.push(newNote);
+
+  // Write the updated data back to the file
+    writeDataToFile(notes);
 
   // Send the new note as a response
     res.json(newNote);
-});
-
-// Route to view a specific note by ID
-app.get('/api/notes/:id', (req, res) => {
-    const noteId = req.params.id;
-
-  // Find the note with the matching ID
-    const selectedNote = notes.find((note) => note.id === noteId);
-
-    if (!selectedNote) {
-    // Handle the case where the note with the given ID does not exist
-    return res.status(404).json({ error: 'Note not found' });
-    }
-
-  // Send the selected note as JSON response
-    res.json(selectedNote);
-});
-
-// Route to edit a specific note by ID
-app.put('/api/notes/:id', (req, res) => {
-    const noteId = req.params.id;
-    const updatedNote = req.body;
-
-  // Find the index of the note with the matching ID
-    const index = notes.findIndex((note) => note.id === noteId);
-
-    if (index === -1) {
-    // Handle the case where the note with the given ID does not exist
-    return res.status(404).json({ error: 'Note not found' });
-    } 
-
-  // Update the note in your data storage 
-    notes[index] = updatedNote;
-
-  // Send the updated note as JSON response
-    res.json(updatedNote);
 });
 
 // Start the server
