@@ -1,5 +1,3 @@
-// index.js - Frontend JavaScript
-
 // Function to load and display notes from the server
 function loadNotes() {
     fetch('/api/notes')
